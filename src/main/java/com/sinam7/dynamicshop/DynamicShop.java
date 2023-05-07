@@ -1,5 +1,7 @@
 package com.sinam7.dynamicshop;
 
+import com.sinam7.dynamicshop.command.CommandManager;
+import com.sinam7.dynamicshop.command.CommandTabCompleter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -12,6 +14,8 @@ public class DynamicShop extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
+        this.getCommand("ds").setExecutor(new CommandManager());
+        this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
     }
 
     @EventHandler
