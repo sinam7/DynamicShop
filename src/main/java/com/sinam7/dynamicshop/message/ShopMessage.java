@@ -26,4 +26,34 @@ public class ShopMessage {
                 , Style.style(TextColor.color(255, 255, 0))
         );
     }
+
+    public static TextComponent insufficientOpenShopArguments(int arguments) {
+        return Component.text(
+                """
+                        Argument must be 1, %s argument(s) found.
+                        Usage: /ds open (Shop id)
+                        """.formatted(arguments - 1)
+                , Style.style(TextColor.color(255, 0, 0))
+        );
+    }
+
+    public static TextComponent invalidShopId(long wrongShopId) {
+        return Component.text(
+                """
+                        The shop id "%s" is invalid. Check your Shop Id.
+                        Usage: /ds open (Shop id)
+                        """.formatted(wrongShopId)
+                , Style.style(TextColor.color(255, 0, 0))
+        );
+    }
+
+    public static TextComponent invalidShopIdFormat(Object args) {
+        return Component.text(
+                """
+                        The shop id "%s" is invalid. Check your Shop Id.
+                        Usage: /ds open (Shop id)
+                        """.formatted(args)
+                , Style.style(TextColor.color(255, 0, 0))
+        );
+    }
 }
