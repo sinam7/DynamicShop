@@ -6,30 +6,41 @@ import com.sinam7.dynamicshop.shop.ShopManager;
 import com.sinam7.dynamicshop.villager.VillagerManager;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
+@SuppressWarnings("SameReturnValue")
 public class CommandManager implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 0) {
+        if (!(sender instanceof Player)) { // No console
+            sender.sendMessage(ShopMessage.consoleCannotCommand());
+            return true;
+        }
+
+        if (!sender.isOp()) { // Only Op
+            sender.sendMessage(ShopMessage.opOnlyCommand());
+            return true;
+        }
+
+        if (args.length == 0) { // blank call; /ds
             return false;
         }
 
+        // ds ( ) __
         switch (args[0]) {
             case "create" -> { // ds create [Shop name]
                 return createShop(sender, args);
             }
             case "additem" -> { // ds additem (Shop id) (buyPrice) (sellPrice)
-                if (args.length != 3) { // insufficient args given
-                    sender.sendMessage(ShopMessage.insufficientAddItemArguments(args.length));
-                    return true;
-                }
+                return addItemToShop(sender, args);
             }
             case "open" -> { // ds open (Shop id)
                 return openShopGui(sender, args);
@@ -38,7 +49,52 @@ public class CommandManager implements CommandExecutor {
         return false;
     }
 
-    @SuppressWarnings("SameReturnValue")
+    private static boolean addItemToShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+        if (args.length != 4) { // insufficient args given
+            sender.sendMessage(ShopMessage.insufficientAddItemArguments(args.length));
+            return true;
+        }
+
+        int flag = 0;
+        String[] argsName = new String[]{"shopId", "buyPrice", "sellPrice"};
+        long shopId;
+        int buyPrice, sellPrice;
+        try {
+            flag = 1;
+            shopId = Long.parseLong(args[1]);
+            flag = 2;
+            buyPrice = Integer.parseInt(args[2]);
+            flag = 3;
+            sellPrice = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) { // argument convert failed; first failed args will be notified
+            sender.sendMessage(ShopMessage.invalidAddItemArgumentFormat(argsName[flag], args[flag]));
+            return true;
+        }
+
+        if (ShopManager.isShopNotExist(shopId)) { // ShopId not exist
+            sender.sendMessage(ShopMessage.invalidShopId(shopId));
+            return true;
+        }
+
+        if (buyPrice < 0 || sellPrice < 0) { // Invalid price set
+            sender.sendMessage(ShopMessage.invalidAddItemPriceInput(buyPrice, sellPrice));
+            return true;
+        }
+
+        ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand();
+        if (itemStack.getType() == Material.AIR) { // Empty hand
+            sender.sendMessage(ShopMessage.emptyHandAddItem());
+            return true;
+        }
+
+        String[] result = ShopManager.addItem(shopId, buyPrice, sellPrice, itemStack);
+        if (result.length != 2) return false; // something went wrong!
+
+        // Success
+        sender.sendMessage(ShopMessage.successAddItem(result[0], result[1], buyPrice, sellPrice));
+        return true;
+    }
+
     private static boolean openShopGui(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         if (args.length != 2) { // insufficient args given
             sender.sendMessage(ShopMessage.insufficientOpenShopArguments(args.length));
@@ -53,7 +109,7 @@ public class CommandManager implements CommandExecutor {
             return true;
         }
 
-        if (!ShopManager.isShopExist(shopId)) { // ShopId not exist
+        if (ShopManager.isShopNotExist(shopId)) { // ShopId not exist
             sender.sendMessage(ShopMessage.invalidShopId(shopId));
             return true;
         }

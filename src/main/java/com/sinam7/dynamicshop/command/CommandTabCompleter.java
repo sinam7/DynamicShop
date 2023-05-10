@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class CommandTabCompleter implements TabCompleter {
 
-    String[] commands = new String[]{"create", "open"};
+    String[] commands = new String[]{"create", "open", "additem"};
     final List<String> emptyList = new ArrayList<>();
 
     @Override
@@ -23,11 +23,15 @@ public class CommandTabCompleter implements TabCompleter {
             return List.of(commands);
         }
 
-        if (args.length == 2 && args[0].contains("open")) {
-            IntStream range = IntStream.range(0, ShopManager.shopList.size());
-            List<String> list = new ArrayList<>();
-            range.forEach(i -> list.add(String.valueOf(i)));
-            return list;
+        if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("open")
+                    || args[0].equalsIgnoreCase("additem")) {
+
+                IntStream range = IntStream.range(0, ShopManager.shopList.size());
+                List<String> list = new ArrayList<>();
+                range.forEach(i -> list.add(String.valueOf(i)));
+                return list;
+            }
         }
         return emptyList;
     }

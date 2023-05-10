@@ -1,6 +1,8 @@
 package com.sinam7.dynamicshop.shop;
 
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Location;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +23,15 @@ public class ShopManager {
         return shopList.get(shopId);
     }
 
-    public static boolean isShopExist(Long shopId) {
-        return shopList.containsKey(shopId);
+    public static boolean isShopNotExist(Long shopId) {
+        return !shopList.containsKey(shopId);
     }
 
+    public static String[] addItem(long shopId, int buyPrice, int sellPrice, ItemStack itemStack) {
+        Shop shop = getShop(shopId);
+        shop.addItemEntry(itemStack, buyPrice, sellPrice);
+        TextComponent displayName = (TextComponent) itemStack.getItemMeta().displayName();
+        assert displayName != null;
+        return new String[]{displayName.content(), shop.getName()};
+    }
 }
