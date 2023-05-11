@@ -37,7 +37,7 @@ public class Shop {
     public ItemStack[] getItemStacks() {
         ItemStack[] itemStacks = new ItemStack[itemEntryList.size()];
         for (int i = 0; i < itemEntryList.size(); i++) {
-            itemStacks[i] = itemEntryList.get(i).itemStack();
+            itemStacks[i] = itemEntryList.get(i).getDisplayItem();
         }
         return itemStacks;
     }

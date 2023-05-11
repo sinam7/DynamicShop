@@ -11,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class DynamicShop extends JavaPlugin implements Listener {
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);

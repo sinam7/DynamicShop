@@ -1,5 +1,6 @@
 package com.sinam7.dynamicshop.shop;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -10,7 +11,7 @@ import java.util.Map;
 public class ShopManager {
 
     private static Long sequence = 0L; // TODO: 2023-05-09 save sequence info
-    public static Map<Long, Shop> shopList = new HashMap<>();
+    public static final Map<Long, Shop> shopList = new HashMap<>();
 
     public static Long createShop(String name, Location location) {
         Shop shop = new Shop(sequence++, location);
@@ -30,8 +31,10 @@ public class ShopManager {
     public static String[] addItem(long shopId, int buyPrice, int sellPrice, ItemStack itemStack) {
         Shop shop = getShop(shopId);
         shop.addItemEntry(itemStack, buyPrice, sellPrice);
-        TextComponent displayName = (TextComponent) itemStack.getItemMeta().displayName();
+        //noinspection StringOperationCanBeSimplified: Material.name() recommends to call toString()
+        Component displayName = itemStack.getItemMeta().hasDisplayName()
+                ? itemStack.getItemMeta().displayName() : Component.text(itemStack.getType().name().toString());
         assert displayName != null;
-        return new String[]{displayName.content(), shop.getName()};
+        return new String[]{((TextComponent) displayName).content(), shop.getName()};
     }
 }

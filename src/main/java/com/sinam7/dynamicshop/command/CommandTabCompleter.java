@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class CommandTabCompleter implements TabCompleter {
 
-    String[] commands = new String[]{"create", "open", "additem"};
+    final String[] commands = new String[]{"create", "open", "additem"};
     final List<String> emptyList = new ArrayList<>();
 
     @Override
