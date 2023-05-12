@@ -23,7 +23,7 @@ public class GuiManager {
     public static void createGui(Player player, Long shopId) {
         Shop shop = ShopManager.getShop(shopId);
 
-        Inventory inv = Bukkit.createInventory(null, 54, Component.text(shop.getName() + ":" + shopId));
+        Inventory inv = Bukkit.createInventory(new GuiHolder(shopId), 54, Component.text(shop.getName() + ":" + shopId));
         inv.addItem(shop.getItemStacks());
 
         IntStream.range(36, 45).forEach(i -> inv.setItem(i, getSeparator()));
@@ -40,5 +40,6 @@ public class GuiManager {
         }
         return separator;
     }
+
 
 }

@@ -7,7 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -18,28 +19,32 @@ public class Shop {
     Location location;
 
     @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
-    List<ItemEntry> itemEntryList;
+    Map<ItemStack, ItemEntry> displayToEntryMap;
 
     public Shop(long id, Location location) {
         this.id = id;
         this.location = location;
-        itemEntryList = new ArrayList<>(36);
+        displayToEntryMap = new LinkedHashMap<>(36);
     }
     public void addItemEntry(ItemStack itemStack, Integer buyPrice, Integer sellPrice) {
         ItemEntry itemEntry = new ItemEntry(itemStack, buyPrice, sellPrice);
-        itemEntryList.add(itemEntry);
+        displayToEntryMap.put(itemEntry.getDisplayItem(), itemEntry);
     }
 
+    public ItemStack displayToStock(ItemStack displayItem) {
+        ItemEntry itemEntry = displayToEntryMap.get(displayItem);
+        return itemEntry != null ? itemEntry.getStock() : null;
+    }
+
+    @SuppressWarnings("unused")
     public void removeItemEntry(ItemEntry itemEntry) {
-        itemEntryList.remove(itemEntry);
+        displayToEntryMap.remove(itemEntry.getDisplayItem());
     }
 
     public ItemStack[] getItemStacks() {
-        ItemStack[] itemStacks = new ItemStack[itemEntryList.size()];
-        for (int i = 0; i < itemEntryList.size(); i++) {
-            itemStacks[i] = itemEntryList.get(i).getDisplayItem();
-        }
-        return itemStacks;
+        ArrayList<ItemStack> itemStacks = new ArrayList<>(displayToEntryMap.size());
+        displayToEntryMap.values().forEach(entry -> itemStacks.add(entry.getDisplayItem()));
+        return itemStacks.toArray(new ItemStack[0]);
     }
 
 }

@@ -81,12 +81,12 @@ public class CommandManager implements CommandExecutor {
             return true;
         }
 
-        ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand();
+        ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand().clone();
         if (itemStack.getType() == Material.AIR) { // Empty hand
             sender.sendMessage(ShopMessage.emptyHandAddItem());
             return true;
         }
-
+        itemStack.setAmount(1); // only one item
         String[] result = ShopManager.addItem(shopId, buyPrice, sellPrice, itemStack);
         if (result.length != 2) return false; // something went wrong!
 
