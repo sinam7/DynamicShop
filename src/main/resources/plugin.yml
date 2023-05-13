@@ -5,6 +5,7 @@ description: Shop with dynamic price
 author: sinam7
 website: https://github.com/sinam7
 api-version: 1.19
+depend: [Vault]
 
 commands:
   ds:

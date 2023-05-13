@@ -20,25 +20,32 @@ public class Shop {
 
     @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
     Map<ItemStack, ItemEntry> displayToEntryMap;
+    Map<ItemStack, ItemEntry> stockToEntryMap;
 
     public Shop(long id, Location location) {
         this.id = id;
         this.location = location;
         displayToEntryMap = new LinkedHashMap<>(36);
+        stockToEntryMap = new LinkedHashMap<>(36);
     }
     public void addItemEntry(ItemStack itemStack, Integer buyPrice, Integer sellPrice) {
         ItemEntry itemEntry = new ItemEntry(itemStack, buyPrice, sellPrice);
         displayToEntryMap.put(itemEntry.getDisplayItem(), itemEntry);
+        stockToEntryMap.put(itemEntry.getStock(), itemEntry);
     }
 
-    public ItemStack displayToStock(ItemStack displayItem) {
-        ItemEntry itemEntry = displayToEntryMap.get(displayItem);
-        return itemEntry != null ? itemEntry.getStock() : null;
+    public ItemEntry getEntryFromDisplay(ItemStack displayItem) {
+        return displayToEntryMap.get(displayItem);
+    }
+
+    public ItemEntry getEntryFromStock(ItemStack displayItem) {
+        return stockToEntryMap.get(displayItem);
     }
 
     @SuppressWarnings("unused")
     public void removeItemEntry(ItemEntry itemEntry) {
         displayToEntryMap.remove(itemEntry.getDisplayItem());
+        stockToEntryMap.remove(itemEntry.getStock());
     }
 
     public ItemStack[] getItemStacks() {

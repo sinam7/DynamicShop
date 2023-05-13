@@ -1,6 +1,8 @@
 package com.sinam7.dynamicshop.event;
 
 import com.sinam7.dynamicshop.gui.GuiHolder;
+import com.sinam7.dynamicshop.shop.ItemEntry;
+import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,8 +12,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.HashMap;
 
 public class ShopEvent implements Listener {
 
@@ -26,24 +26,20 @@ public class ShopEvent implements Listener {
 
         Player player = (Player) view.getPlayer();
         InventoryHolder holder = clickedInventory.getHolder();
-        ItemStack item = clickedInventory.getItem(event.getSlot());
+        if (holder == null) return; // when gui is not related to this plugin; this plugin's holder is GuiHolder
 
 //        Bukkit.getLogger().log(Level.INFO, "topInventory = {%s}, player = {%s}, holder = {%s}".formatted(topInventory, player.toString(), holder));
-
-        if (holder instanceof GuiHolder) { // buy phase
-            Long shopId = ((GuiHolder) holder).shopId();
-            ItemStack stock = ShopManager.getShop(shopId).displayToStock(item);
-            if (stock != null) { // ignore empty slot or separator clicked
-                HashMap<Integer, ItemStack> boughtButNotGiven = player.getInventory().addItem(stock);
-                if (!boughtButNotGiven.isEmpty()) {
-                    player.sendMessage("어 인벤 꽉찼다");
-                }
+        Shop shop = ShopManager.getShop(((GuiHolder) topInventory.getHolder()).shopId());
+        ItemStack item = clickedInventory.getItem(event.getSlot());
+        if (clickedInventory.equals(topInventory)) { // buy phase
+            ItemEntry entry = shop.getEntryFromDisplay(item);
+            if (entry != null) { // ignore empty slot or separator clicked
+                ShopManager.executeBuyProcess(player, entry.getStock(), entry.getBuyPrice());
             }
-        }
-
-        else if (holder == player) { // sell phase
-            if (item != null) {
-                item.setAmount(Math.max(item.getAmount() - 1, 0));
+        } else { // sell phase
+            if (item != null) { // ignore empty slot clicked
+                ItemEntry entry = shop.getEntryFromStock(item);
+                ShopManager.executeSellProcess(player, item, entry.getSellPrice());
             }
         }
 
