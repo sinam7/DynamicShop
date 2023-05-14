@@ -3,7 +3,6 @@ package com.sinam7.dynamicshop.command;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.ShopManager;
-import com.sinam7.dynamicshop.villager.VillagerManager;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -131,7 +130,9 @@ public class CommandManager implements CommandExecutor {
         Player player = (Player) sender;
         Location location = player.getLocation();
         Long shopId = ShopManager.createShop(shopName, location);
+        /* TODO: 2023-05-14 Connect(bind) shop to villager
         VillagerManager.createVillager(shopName, location);
+        */
         GuiManager.createGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
