@@ -133,6 +133,8 @@ public class CommandManager implements CommandExecutor {
         Long shopId = ShopManager.createShop(shopName, location);
         VillagerManager.createVillager(shopName, location);
         GuiManager.createGui(player, shopId);
+        sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
+
         return true;
     }
 

@@ -1,5 +1,6 @@
 package com.sinam7.dynamicshop.shop;
 
+import com.sinam7.dynamicshop.message.ShopMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -42,26 +43,25 @@ public class ShopManager {
         return new String[]{((TextComponent) displayName).content(), shop.getName()};
     }
 
-    // TODO: 2023-05-14 메시지 변경 
     public static void executeBuyProcess(Player player, ItemStack stock, Integer price) {
         double balance = getEcon().getBalance(player);
         if (balance < price) {
-            player.sendMessage("아 돈이 없는데");
+            player.sendMessage(ShopMessage.notEnoughMoneyBuyProcess(price, balance));
             return;
         }
         EconomyResponse res = getEcon().withdrawPlayer(player, price);
         HashMap<Integer, ItemStack> boughtButNotGiven = player.getInventory().addItem(stock);
         if (!boughtButNotGiven.isEmpty()) {
-            player.sendMessage("어 인벤 꽉찼다");
-            getEcon().depositPlayer(player, res.amount); // cancel payment for not given item
+            EconomyResponse refund = getEcon().depositPlayer(player, res.amount);// cancel payment for not given item
+            player.sendMessage(ShopMessage.notEnoughSlotBuyProcess(res.amount, refund.balance));
+            return;
         }
-        player.sendMessage("구매 완료!");
+        player.sendMessage(ShopMessage.successBuyProcess(res.balance));
     }
 
-    // TODO: 2023-05-14 메시지 변경 
     public static void executeSellProcess(Player player, ItemStack item, Integer price) {
         item.setAmount(Math.max(item.getAmount() - 1, 0));
-        getEcon().depositPlayer(player, price);
-        player.sendMessage("판매 완료!");
+        EconomyResponse res = getEcon().depositPlayer(player, price);
+        player.sendMessage(ShopMessage.successSellProcess(res.balance));
     }
 }

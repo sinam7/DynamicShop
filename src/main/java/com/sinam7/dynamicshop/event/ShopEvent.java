@@ -31,14 +31,15 @@ public class ShopEvent implements Listener {
 //        Bukkit.getLogger().log(Level.INFO, "topInventory = {%s}, player = {%s}, holder = {%s}".formatted(topInventory, player.toString(), holder));
         Shop shop = ShopManager.getShop(((GuiHolder) topInventory.getHolder()).shopId());
         ItemStack item = clickedInventory.getItem(event.getSlot());
+        if (item == null) return;
         if (clickedInventory.equals(topInventory)) { // buy phase
             ItemEntry entry = shop.getEntryFromDisplay(item);
             if (entry != null) { // ignore empty slot or separator clicked
                 ShopManager.executeBuyProcess(player, entry.getStock(), entry.getBuyPrice());
             }
         } else { // sell phase
-            if (item != null) { // ignore empty slot clicked
-                ItemEntry entry = shop.getEntryFromStock(item);
+            ItemEntry entry = shop.getEntryFromStock(item.asQuantity(1));
+            if (entry != null) { // ignore empty slot clicked
                 ShopManager.executeSellProcess(player, item, entry.getSellPrice());
             }
         }
