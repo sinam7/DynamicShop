@@ -139,12 +139,29 @@ public class ShopMessage {
         );
     }
 
+    public static TextComponent buyDisabled() {
+        return Component.text(
+                """
+                        Buying this item is disabled!
+                        """
+                , Style.style(TextColor.fromHexString("#ff8800"))
+        );
+    }
+
     public static TextComponent successSellProcess(double balance) {
         return Component.text(
                 """
                         Item successfully sold!
                         your current balance: %s""".formatted(balance)
                 , Style.style(TextColor.fromHexString("#00ff00"))
+        );
+    }
+    public static TextComponent sellDisabled() {
+        return Component.text(
+                """
+                        Selling this item is disabled!
+                        """
+                , Style.style(TextColor.fromHexString("#ff8800"))
         );
     }
 

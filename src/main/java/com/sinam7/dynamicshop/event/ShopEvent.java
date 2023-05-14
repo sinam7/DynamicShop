@@ -1,6 +1,7 @@
 package com.sinam7.dynamicshop.event;
 
 import com.sinam7.dynamicshop.gui.GuiHolder;
+import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.ItemEntry;
 import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
@@ -35,12 +36,20 @@ public class ShopEvent implements Listener {
         if (clickedInventory.equals(topInventory)) { // buy phase
             ItemEntry entry = shop.getEntryFromDisplay(item);
             if (entry != null) { // ignore empty slot or separator clicked
-                ShopManager.executeBuyProcess(player, entry.getStock(), entry.getBuyPrice());
+                if (entry.isBuyAble()) {
+                    ShopManager.executeBuyProcess(player, entry.getStock(), entry.getBuyPrice());
+                } else {
+                    player.sendMessage(ShopMessage.buyDisabled());
+                }
             }
         } else { // sell phase
             ItemEntry entry = shop.getEntryFromStock(item.asQuantity(1));
             if (entry != null) { // ignore empty slot clicked
-                ShopManager.executeSellProcess(player, item, entry.getSellPrice());
+                if (entry.isSellable()) {
+                    ShopManager.executeSellProcess(player, item, entry.getSellPrice());
+                } else {
+                    player.sendMessage(ShopMessage.sellDisabled());
+                }
             }
         }
 
