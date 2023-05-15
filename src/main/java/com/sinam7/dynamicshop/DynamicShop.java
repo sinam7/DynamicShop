@@ -3,6 +3,7 @@ package com.sinam7.dynamicshop;
 import com.sinam7.dynamicshop.command.CommandManager;
 import com.sinam7.dynamicshop.command.CommandTabCompleter;
 import com.sinam7.dynamicshop.event.ShopEvent;
+import com.sinam7.dynamicshop.event.VillagerEvent;
 import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -34,6 +35,7 @@ public class DynamicShop extends JavaPlugin implements Listener {
         }
 
         Bukkit.getPluginManager().registerEvents(new ShopEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new VillagerEvent(), this);
         this.getCommand("ds").setExecutor(new CommandManager());
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
     }
