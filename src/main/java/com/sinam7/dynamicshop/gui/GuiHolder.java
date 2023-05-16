@@ -4,7 +4,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
-public record GuiHolder(Long shopId) implements InventoryHolder {
+public record GuiHolder(long shopId) implements InventoryHolder {
 
     @SuppressWarnings("DataFlowIssue")
     @Override

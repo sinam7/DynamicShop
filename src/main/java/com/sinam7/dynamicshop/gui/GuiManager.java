@@ -13,18 +13,22 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Map;
 import java.util.stream.IntStream;
 
 public class GuiManager {
 
     private static ItemStack separator;
 
-    // TODO: 2023-05-09 상점 GUI에서 아이템 꺼냄 방지 
     public static void createGui(Player player, Long shopId) {
         Shop shop = ShopManager.getShop(shopId);
 
         Inventory inv = Bukkit.createInventory(new GuiHolder(shopId), 54, Component.text(shop.getName() + ":" + shopId));
-        inv.addItem(shop.getItemStacks());
+
+        Map<Integer, ItemStack> displayItems = shop.getDisplayItems();
+        for (Integer slotId : displayItems.keySet()) {
+            inv.setItem(slotId, displayItems.get(slotId));
+        }
 
         IntStream.range(36, 45).forEach(i -> inv.setItem(i, getSeparator()));
         player.openInventory(inv);

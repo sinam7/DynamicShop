@@ -142,8 +142,7 @@ public class ShopMessage {
     public static TextComponent buyDisabled() {
         return Component.text(
                 """
-                        Buying this item is disabled!
-                        """
+                        Buying this item is disabled!"""
                 , Style.style(TextColor.fromHexString("#ff8800"))
         );
     }
@@ -159,8 +158,15 @@ public class ShopMessage {
     public static TextComponent sellDisabled() {
         return Component.text(
                 """
-                        Selling this item is disabled!
-                        """
+                        Selling this item is disabled!"""
+                , Style.style(TextColor.fromHexString("#ff8800"))
+        );
+    }
+
+    public static TextComponent notEnoughItemSellProcess() {
+        return Component.text(
+                """
+                        Not enough items to sell!"""
                 , Style.style(TextColor.fromHexString("#ff8800"))
         );
     }

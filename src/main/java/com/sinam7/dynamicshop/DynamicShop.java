@@ -21,14 +21,13 @@ import java.util.logging.Logger;
 @SuppressWarnings("DataFlowIssue")
 public class DynamicShop extends JavaPlugin implements Listener {
 
-    private static final Logger log = Logger.getLogger("Minecraft");
-
+    public static final Logger log = Logger.getLogger("Minecraft");
     private static Economy econ = null;
 
     @SuppressWarnings("DataFlowIssue")
     @Override
     public void onEnable() {
-        if (!setupEconomy() ) {
+        if (!setupEconomy()) {
             log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getPlugin(this.getClass()).getName()));
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -38,6 +37,9 @@ public class DynamicShop extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new VillagerEvent(), this);
         this.getCommand("ds").setExecutor(new CommandManager());
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
+
+        ConfigManager.init(this, this.getConfig());
+        saveDefaultConfig();
     }
 
     @EventHandler
