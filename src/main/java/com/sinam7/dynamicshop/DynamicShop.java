@@ -3,14 +3,12 @@ package com.sinam7.dynamicshop;
 import com.sinam7.dynamicshop.command.CommandManager;
 import com.sinam7.dynamicshop.command.CommandTabCompleter;
 import com.sinam7.dynamicshop.event.ShopEvent;
-import net.kyori.adventure.text.Component;
+import com.sinam7.dynamicshop.event.VillagerEvent;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,28 +18,28 @@ import java.util.logging.Logger;
 @SuppressWarnings("DataFlowIssue")
 public class DynamicShop extends JavaPlugin implements Listener {
 
-    private static final Logger log = Logger.getLogger("Minecraft");
-
+    public static final Logger log = Logger.getLogger("Minecraft");
     private static Economy econ = null;
 
     @SuppressWarnings("DataFlowIssue")
     @Override
     public void onEnable() {
-        if (!setupEconomy() ) {
+        if (!setupEconomy()) {
             log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getPlugin(this.getClass()).getName()));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
         Bukkit.getPluginManager().registerEvents(new ShopEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new VillagerEvent(), this);
         this.getCommand("ds").setExecutor(new CommandManager());
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
+
+        saveDefaultConfig();
+        ConfigManager.init(this, this.getConfig());
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage(Component.text("Hello, " + event.getPlayer().getName() + "!"));
-    }
+
 
     @SuppressWarnings("ConstantValue")
     private boolean setupEconomy() {

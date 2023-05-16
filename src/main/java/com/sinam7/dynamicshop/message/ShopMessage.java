@@ -142,8 +142,7 @@ public class ShopMessage {
     public static TextComponent buyDisabled() {
         return Component.text(
                 """
-                        Buying this item is disabled!
-                        """
+                        Buying this item is disabled!"""
                 , Style.style(TextColor.fromHexString("#ff8800"))
         );
     }
@@ -159,9 +158,46 @@ public class ShopMessage {
     public static TextComponent sellDisabled() {
         return Component.text(
                 """
-                        Selling this item is disabled!
-                        """
+                        Selling this item is disabled!"""
                 , Style.style(TextColor.fromHexString("#ff8800"))
+        );
+    }
+
+    public static TextComponent notEnoughItemSellProcess() {
+        return Component.text(
+                """
+                        Not enough items to sell!"""
+                , Style.style(TextColor.fromHexString("#ff8800"))
+        );
+    }
+
+    /*
+        ds npc
+     */
+    public static TextComponent insufficientNpcArguments(int arguments) {
+        return Component.text(
+                """
+                        Argument must be 2, %s argument(s) found.
+                        Usage: /ds npc (Shop id)""".formatted(arguments - 1)
+                , Style.style(TextColor.fromHexString("#ff0000"))
+        );
+    }
+
+    public static TextComponent invalidNpcArgumentFormat(String input) {
+        return Component.text(
+                """
+                        The argument(s) "%s" is invalid. Check your input: %s.
+                        Usage: /ds npc (Shop id)""".formatted("shopId", input)
+                , Style.style(TextColor.fromHexString("#ff0000"))
+        );
+    }
+
+    public static TextComponent successCreateNpc(Long shopId, String shopName) {
+        return Component.text(
+                """
+                        Successfully created Npc!
+                        Bind - (Shop id: %s, Shop name: %s)""".formatted(shopId, shopName)
+                , Style.style(TextColor.fromHexString("#00ff00"))
         );
     }
 

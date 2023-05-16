@@ -1,8 +1,11 @@
 package com.sinam7.dynamicshop.command;
 
+import com.sinam7.dynamicshop.ConfigManager;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
+import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
+import com.sinam7.dynamicshop.villager.VillagerManager;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 @SuppressWarnings("SameReturnValue")
 public class CommandManager implements CommandExecutor {
@@ -44,8 +48,37 @@ public class CommandManager implements CommandExecutor {
             case "open" -> { // ds open (Shop id)
                 return openShopGui(sender, args);
             }
+            case "npc" -> {
+                return createNpc((Player) sender, args);
+            }
+            case "debug" -> {
+                ConfigManager.loadConfig();
+                return true;
+            }
         }
         return false;
+    }
+
+    private static boolean createNpc(Player sender, String[] args) {
+        if (args.length != 2) { // insufficient args given
+            sender.sendMessage(ShopMessage.insufficientNpcArguments(args.length));
+            return true;
+        }
+
+        long shopId;
+        try {
+            shopId = Long.parseLong(args[1]);
+        } catch (NumberFormatException e) { // argument convert failed; first failed args will be notified
+            sender.sendMessage(ShopMessage.invalidNpcArgumentFormat(args[1]));
+            return true;
+        }
+
+        Shop shop = ShopManager.getShop(shopId);
+        UUID villagerUUID = VillagerManager.createVillager(shop.getName(), sender.getLocation());
+        VillagerManager.bindVillagerToShop(villagerUUID, shopId);
+        ConfigManager.updateShopLocationQuery(villagerUUID, shopId);
+        sender.sendMessage(ShopMessage.successCreateNpc(shopId, shop.getName()));
+        return true;
     }
 
     private static boolean addItemToShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
@@ -129,10 +162,13 @@ public class CommandManager implements CommandExecutor {
 
         Player player = (Player) sender;
         Location location = player.getLocation();
+
         Long shopId = ShopManager.createShop(shopName, location);
-        /* TODO: 2023-05-14 Connect(bind) shop to villager
-        VillagerManager.createVillager(shopName, location);
-        */
+        UUID villagerId = VillagerManager.createVillager(shopName, location);
+
+        VillagerManager.bindVillagerToShop(villagerId, shopId);
+        ConfigManager.updateShopLocationQuery(villagerId, shopId);
+
         GuiManager.createGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
