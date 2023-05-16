@@ -4,14 +4,11 @@ import com.sinam7.dynamicshop.command.CommandManager;
 import com.sinam7.dynamicshop.command.CommandTabCompleter;
 import com.sinam7.dynamicshop.event.ShopEvent;
 import com.sinam7.dynamicshop.event.VillagerEvent;
-import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -38,14 +35,11 @@ public class DynamicShop extends JavaPlugin implements Listener {
         this.getCommand("ds").setExecutor(new CommandManager());
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
 
-        ConfigManager.init(this, this.getConfig());
         saveDefaultConfig();
+        ConfigManager.init(this, this.getConfig());
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().sendMessage(Component.text("Hello, " + event.getPlayer().getName() + "!"));
-    }
+
 
     @SuppressWarnings("ConstantValue")
     private boolean setupEconomy() {

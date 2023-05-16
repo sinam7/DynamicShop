@@ -1,5 +1,6 @@
 package com.sinam7.dynamicshop.command;
 
+import com.sinam7.dynamicshop.ConfigManager;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.Shop;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 @SuppressWarnings("SameReturnValue")
 public class CommandManager implements CommandExecutor {
@@ -49,6 +51,10 @@ public class CommandManager implements CommandExecutor {
             case "npc" -> {
                 return createNpc((Player) sender, args);
             }
+            case "debug" -> {
+                ConfigManager.loadConfig();
+                return true;
+            }
         }
         return false;
     }
@@ -68,8 +74,9 @@ public class CommandManager implements CommandExecutor {
         }
 
         Shop shop = ShopManager.getShop(shopId);
-        int vId = VillagerManager.createVillager(shop.getName(), sender.getLocation());
-        VillagerManager.bindVillagerToShop(vId, shopId);
+        UUID villagerUUID = VillagerManager.createVillager(shop.getName(), sender.getLocation());
+        VillagerManager.bindVillagerToShop(villagerUUID, shopId);
+        ConfigManager.updateShopLocationQuery(villagerUUID, shopId);
         sender.sendMessage(ShopMessage.successCreateNpc(shopId, shop.getName()));
         return true;
     }
@@ -155,9 +162,13 @@ public class CommandManager implements CommandExecutor {
 
         Player player = (Player) sender;
         Location location = player.getLocation();
+
         Long shopId = ShopManager.createShop(shopName, location);
-        int villagerId = VillagerManager.createVillager(shopName, location);
+        UUID villagerId = VillagerManager.createVillager(shopName, location);
+
         VillagerManager.bindVillagerToShop(villagerId, shopId);
+        ConfigManager.updateShopLocationQuery(villagerId, shopId);
+
         GuiManager.createGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 

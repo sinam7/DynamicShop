@@ -2,6 +2,7 @@ package com.sinam7.dynamicshop.shop;
 
 import com.sinam7.dynamicshop.ConfigManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -16,7 +17,8 @@ import static com.sinam7.dynamicshop.DynamicShop.getEcon;
 
 public class ShopManager {
 
-    private static Long sequence = 0L; // TODO: 2023-05-09 save sequence info
+    @Setter
+    private static Long sequence = 0L;
     public static final Map<Long, Shop> shopList = new HashMap<>();
 
     public static Long createShop(String name, Location location) {
@@ -86,5 +88,9 @@ public class ShopManager {
         player.getInventory().removeItem(entry.getStock().asQuantity(amount));
         EconomyResponse res = getEcon().depositPlayer(player, price * amount);
         player.sendMessage(ShopMessage.successSellProcess(res.balance * amount));
+    }
+
+    public static void addShopToList(Shop shop) {
+        shopList.put(shop.getId(), shop);
     }
 }
