@@ -3,6 +3,7 @@ package com.sinam7.dynamicshop.command;
 import com.sinam7.dynamicshop.ConfigManager;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
+import com.sinam7.dynamicshop.shop.PriceChanger;
 import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
 import com.sinam7.dynamicshop.villager.VillagerManager;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.UUID;
 
-@SuppressWarnings("SameReturnValue")
 public class CommandManager implements CommandExecutor {
 
     @Override
@@ -37,32 +37,32 @@ public class CommandManager implements CommandExecutor {
             return false;
         }
 
+        boolean flag = true;
         // ds ( ) __
         switch (args[0]) {
-            case "create" -> { // ds create [Shop name]
-                return createShop(sender, args);
+
+            case "create" -> createShop(sender, args); // ds create [Shop name]
+            case "additem" -> addItemToShop(sender, args); // ds additem (Shop id) (buyPrice) (sellPrice)
+            case "open" -> openShopGui(sender, args); // ds open (Shop id)
+            case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
+
+            case "debug" -> { // ds admin (run)
+                switch (args[1]) {
+                    case "price" -> PriceChanger.updateAllShopPrice();
+                    case "reload" -> ConfigManager.loadConfig();
+                    default -> flag = false;
+                }
             }
-            case "additem" -> { // ds additem (Shop id) (buyPrice) (sellPrice)
-                return addItemToShop(sender, args);
-            }
-            case "open" -> { // ds open (Shop id)
-                return openShopGui(sender, args);
-            }
-            case "npc" -> {
-                return createNpc((Player) sender, args);
-            }
-            case "debug" -> {
-                ConfigManager.loadConfig();
-                return true;
-            }
+
+            default -> flag = false;
         }
-        return false;
+        return flag;
     }
 
-    private static boolean createNpc(Player sender, String[] args) {
+    private static void createNpc(Player sender, String[] args) {
         if (args.length != 2) { // insufficient args given
             sender.sendMessage(ShopMessage.insufficientNpcArguments(args.length));
-            return true;
+            return;
         }
 
         long shopId;
@@ -70,7 +70,7 @@ public class CommandManager implements CommandExecutor {
             shopId = Long.parseLong(args[1]);
         } catch (NumberFormatException e) { // argument convert failed; first failed args will be notified
             sender.sendMessage(ShopMessage.invalidNpcArgumentFormat(args[1]));
-            return true;
+            return;
         }
 
         Shop shop = ShopManager.getShop(shopId);
@@ -78,13 +78,12 @@ public class CommandManager implements CommandExecutor {
         VillagerManager.bindVillagerToShop(villagerUUID, shopId);
         ConfigManager.updateShopLocationQuery(villagerUUID, shopId);
         sender.sendMessage(ShopMessage.successCreateNpc(shopId, shop.getName()));
-        return true;
     }
 
-    private static boolean addItemToShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+    private static void addItemToShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         if (args.length != 4) { // insufficient args given
             sender.sendMessage(ShopMessage.insufficientAddItemArguments(args.length));
-            return true;
+            return;
         }
 
         int flag = 0;
@@ -100,37 +99,36 @@ public class CommandManager implements CommandExecutor {
             sellPrice = Integer.parseInt(args[3]);
         } catch (NumberFormatException e) { // argument convert failed; first failed args will be notified
             sender.sendMessage(ShopMessage.invalidAddItemArgumentFormat(argsName[flag], args[flag]));
-            return true;
+            return;
         }
 
         if (ShopManager.isShopNotExist(shopId)) { // ShopId not exist
             sender.sendMessage(ShopMessage.invalidShopId(shopId));
-            return true;
+            return;
         }
 
         if (buyPrice < 0 || sellPrice < 0) { // Invalid price set
             sender.sendMessage(ShopMessage.invalidAddItemPriceInput(buyPrice, sellPrice));
-            return true;
+            return;
         }
 
         ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand().clone();
         if (itemStack.getType() == Material.AIR) { // Empty hand
             sender.sendMessage(ShopMessage.emptyHandAddItem());
-            return true;
+            return;
         }
         itemStack.setAmount(1); // only one item
         String[] result = ShopManager.addItem(shopId, buyPrice, sellPrice, itemStack);
-        if (result.length != 2) return false; // something went wrong!
+        if (result.length != 2) return; // something went wrong!
 
         // Success
         sender.sendMessage(ShopMessage.successAddItem(result[0], result[1], buyPrice, sellPrice));
-        return true;
     }
 
-    private static boolean openShopGui(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+    private static void openShopGui(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         if (args.length != 2) { // insufficient args given
             sender.sendMessage(ShopMessage.insufficientOpenShopArguments(args.length));
-            return true;
+            return;
         }
 
         long shopId;
@@ -138,19 +136,18 @@ public class CommandManager implements CommandExecutor {
             shopId = Long.parseLong(args[1]);
         } catch (NumberFormatException e) { // ShopId convert failed
             sender.sendMessage(ShopMessage.invalidShopIdFormat(args[1]));
-            return true;
+            return;
         }
 
         if (ShopManager.isShopNotExist(shopId)) { // ShopId not exist
             sender.sendMessage(ShopMessage.invalidShopId(shopId));
-            return true;
+            return;
         }
 
         GuiManager.createGui((Player) sender, shopId);
-        return true;
     }
 
-    private static boolean createShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+    private static void createShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         String rawName = StringUtils.join(Arrays.copyOfRange(args, 1, args.length), ' ');
         String shopName = rawName;
 
@@ -172,7 +169,6 @@ public class CommandManager implements CommandExecutor {
         GuiManager.createGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
-        return true;
     }
 
 

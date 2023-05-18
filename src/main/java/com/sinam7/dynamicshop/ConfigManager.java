@@ -110,8 +110,8 @@ public class ConfigManager {
         Map<Integer, ItemEntry> itemEntryMap = shop.getItemEntryMap();
         for (Integer slotId : itemEntryMap.keySet()) {
             config.set("shop.%s.entries.%s.stock".formatted(shopId, slotId), itemEntryMap.get(slotId).getStock());
-            config.set("shop.%s.entries.%s.buyprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getBuyPrice());
-            config.set("shop.%s.entries.%s.sellprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getSellPrice());
+            config.set("shop.%s.entries.%s.buyprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultBuyPrice());
+            config.set("shop.%s.entries.%s.sellprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultSellPrice());
         }
 
         plugin.saveConfig();
