@@ -36,7 +36,7 @@ public class DynamicShop extends JavaPlugin implements Listener {
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
 
         saveDefaultConfig();
-        ConfigManager.init(this, this.getConfig());
+        ConfigManager.init(this);
     }
 
 

@@ -33,8 +33,14 @@ public class ConfigManager {
      */
 
     public static void loadConfig() {
+        plugin.getLogger().log(Level.INFO, "Config load started...");
+        plugin.reloadConfig();
+        config = plugin.getConfig();
         ConfigurationSection section = config.getConfigurationSection("shop"); // shop
-        if (section == null) return;
+        if (section == null) {
+            plugin.getLogger().log(Level.INFO, "No shop section found!");
+            return;
+        }
         long sequence = 0L;
         Map<UUID, Long> uuidMap = new LinkedHashMap<>();
         for (String key : section.getKeys(false)) { // shop.0
@@ -68,11 +74,20 @@ public class ConfigManager {
                     if (entry == null) continue;
 
                     ItemStack stock = entry.getItemStack("stock"); // shop.0.entries.0.stock
-                    int buyprice = entry.getInt("buyprice"); // shop.0.entries.0.buyprice
-                    int sellprice = entry.getInt("sellprice"); // shop.0.entries.0.sellprice
+                    int buyprice = entry.getInt("buyprice", 0); // shop.0.entries.0.buyprice
+                    int sellprice = entry.getInt("sellprice", 0); // shop.0.entries.0.sellprice
+
+                    String rawChangePrice = entry.getString("changeprice"); // shop.0.entries.0.changeprice
+                    boolean state;
+                    switch (rawChangePrice == null ? "null" : rawChangePrice.toLowerCase().strip()) {
+                        case "true" -> state = true;
+                        case "false" -> state = false;
+                        default -> state = buyprice == 0; /*  if changePrice is not specified and buyprice is not 0(=buy enabled), return false */
+                    }
 
                     if (stock == null || buyprice < 0 || sellprice < 0) continue;
-                    ItemEntry itemEntry = new ItemEntry(stock, buyprice, sellprice);
+                    ItemEntry itemEntry = new ItemEntry(stock, buyprice, sellprice, state
+                    );
                     itemEntryMap.put(slotId, itemEntry);
                 }
             }
@@ -87,9 +102,10 @@ public class ConfigManager {
         plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
     }
 
-    public static void init(JavaPlugin plugin, FileConfiguration config) {
+    public static void init(JavaPlugin plugin) {
         ConfigManager.plugin = plugin;
-        ConfigManager.config = config;
+        config = plugin.getConfig();
+        loadConfig();
     }
 
     public static void addShop(Shop shop) {
@@ -112,6 +128,8 @@ public class ConfigManager {
             config.set("shop.%s.entries.%s.stock".formatted(shopId, slotId), itemEntryMap.get(slotId).getStock());
             config.set("shop.%s.entries.%s.buyprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultBuyPrice());
             config.set("shop.%s.entries.%s.sellprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultSellPrice());
+            Boolean raw = itemEntryMap.get(slotId).getChangePrice();
+            config.set("shop.%s.entries.%s.changeprice".formatted(shopId, slotId), raw == null ? itemEntryMap.get(slotId).getDefaultBuyPrice() == 0 : raw);
         }
 
         plugin.saveConfig();

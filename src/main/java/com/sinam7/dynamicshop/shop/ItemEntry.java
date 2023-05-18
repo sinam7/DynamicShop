@@ -18,6 +18,7 @@ public class ItemEntry {
     private final ItemStack stock;
     private final Integer defaultBuyPrice;
     private final Integer defaultSellPrice;
+    private final Boolean changePrice;
 
     private double ratio;
     private int currentBuyPrice;
@@ -33,14 +34,18 @@ public class ItemEntry {
     private final Style priceDown = Style.style(TextColor.fromHexString("#0000ff"));
     private final Style priceEqual = Style.style(TextColor.fromHexString("#878787"));
 
-    public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice) {
+    public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice, Boolean changePrice) {
         this.displayItem = itemStack.clone();
         this.stock = itemStack;
         this.defaultBuyPrice = this.currentBuyPrice = defaultBuyPrice;
         this.defaultSellPrice = this.currentSellPrice = defaultSellPrice;
         this.ratio = 0.0;
-
+        this.changePrice = changePrice;
         updatePrice(ratio);
+    }
+
+    public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice) {
+        this(itemStack, defaultBuyPrice, defaultSellPrice, defaultBuyPrice == 0 /*if buy disabled return true*/) ;
     }
 
     public void updatePrice(double ratio) {
@@ -121,6 +126,8 @@ public class ItemEntry {
         return defaultSellPrice != null && defaultSellPrice > 0;
     }
 
-
+    public boolean canChangePrice() {
+        return changePrice;
+    }
 
 }

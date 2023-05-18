@@ -12,7 +12,7 @@ public class PriceChanger {
     }
 
     public static void changePrice(ItemEntry entry) {
-        entry.updatePrice(runGaussian());
+        if (entry.canChangePrice()) entry.updatePrice(runGaussian());
     }
 
     public static void updateAllShopPrice() {
