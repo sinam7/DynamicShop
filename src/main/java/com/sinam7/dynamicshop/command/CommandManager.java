@@ -14,12 +14,21 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class CommandManager implements CommandExecutor {
+
+    private final JavaPlugin plugin;
+
+    public CommandManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+    }
+
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -47,9 +56,9 @@ public class CommandManager implements CommandExecutor {
             case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
 
             case "debug" -> { // ds admin (run)
-                switch (args[1]) {
+                switch (args[1] != null ? args[1] : "null") {
                     case "price" -> PriceChanger.updateAllShopPrice();
-                    case "reload" -> ConfigManager.loadConfig();
+                    case "reload" -> reloadConfig();
                     default -> flag = false;
                 }
             }
@@ -57,6 +66,13 @@ public class CommandManager implements CommandExecutor {
             default -> flag = false;
         }
         return flag;
+    }
+
+    private void reloadConfig() {
+        plugin.getLogger().log(Level.INFO, "Config load started...");
+        plugin.reloadConfig();
+        ConfigManager.loadConfig();
+        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
     }
 
     private static void createNpc(Player sender, String[] args) {
@@ -76,7 +92,6 @@ public class CommandManager implements CommandExecutor {
         Shop shop = ShopManager.getShop(shopId);
         UUID villagerUUID = VillagerManager.createVillager(shop.getName(), sender.getLocation());
         VillagerManager.bindVillagerToShop(villagerUUID, shopId);
-        ConfigManager.updateShopLocationQuery(villagerUUID, shopId);
         sender.sendMessage(ShopMessage.successCreateNpc(shopId, shop.getName()));
     }
 
@@ -160,16 +175,13 @@ public class CommandManager implements CommandExecutor {
         Player player = (Player) sender;
         Location location = player.getLocation();
 
-        Long shopId = ShopManager.createShop(shopName, location);
-        UUID villagerId = VillagerManager.createVillager(shopName, location);
-
-        VillagerManager.bindVillagerToShop(villagerId, shopId);
-        ConfigManager.updateShopLocationQuery(villagerId, shopId);
+        Long shopId = ShopManager.createShop(shopName);
+        UUID villagerUUID = VillagerManager.createVillager(shopName, location);
+        VillagerManager.bindVillagerToShop(villagerUUID, shopId);
 
         GuiManager.createGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
     }
-
 
 }

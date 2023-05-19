@@ -177,7 +177,7 @@ public class ShopMessage {
     public static TextComponent insufficientNpcArguments(int arguments) {
         return Component.text(
                 """
-                        Argument must be 2, %s argument(s) found.
+                        Argument must be 1, %s argument(s) found.
                         Usage: /ds npc (Shop id)""".formatted(arguments - 1)
                 , Style.style(TextColor.fromHexString("#ff0000"))
         );
@@ -196,6 +196,15 @@ public class ShopMessage {
         return Component.text(
                 """
                         Successfully created Npc!
+                        Bind - (Shop id: %s, Shop name: %s)""".formatted(shopId, shopName)
+                , Style.style(TextColor.fromHexString("#00ff00"))
+        );
+    }
+
+    public static TextComponent successRemoveNpc(Long shopId, String shopName) {
+        return Component.text(
+                """
+                        Successfully removed Npc!
                         Bind - (Shop id: %s, Shop name: %s)""".formatted(shopId, shopName)
                 , Style.style(TextColor.fromHexString("#00ff00"))
         );

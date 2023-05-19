@@ -32,7 +32,7 @@ public class DynamicShop extends JavaPlugin implements Listener {
 
         Bukkit.getPluginManager().registerEvents(new ShopEvent(), this);
         Bukkit.getPluginManager().registerEvents(new VillagerEvent(), this);
-        this.getCommand("ds").setExecutor(new CommandManager());
+        this.getCommand("ds").setExecutor(new CommandManager(this));
         this.getCommand("ds").setTabCompleter(new CommandTabCompleter());
 
         saveDefaultConfig();
