@@ -17,7 +17,7 @@ public class VillagerEvent implements Listener {
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        ConfigManager.loadConfig();
+        ConfigManager.loadNpc();
         Entity rightClicked = event.getRightClicked();
         UUID clickedUniqueId = rightClicked.getUniqueId();
         Villager villagerById = VillagerManager.getVillagerById(rightClicked.getUniqueId());

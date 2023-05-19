@@ -43,7 +43,7 @@ public class VillagerManager {
     public static void bindVillagerToShop(UUID villagerUUID, Long shopId) {
         villagerToShopIdMap.put(villagerUUID, shopId);
         ShopManager.getShop(shopId).addVillager(villagerUUID);
-        ConfigManager.updateNpcUuid(shopId);
+        ConfigManager.updateNpcUUIDToConfig(shopId);
     }
 
     public static Villager getVillagerById(UUID id) {
@@ -72,7 +72,7 @@ public class VillagerManager {
             Long shopId = villagerToShopIdMap.remove(villagerUUID);
             Shop shop = ShopManager.getShop(shopId);
             shop.removeVillager(villagerUUID);
-            ConfigManager.updateNpcUuid(shopId);
+            ConfigManager.updateNpcUUIDToConfig(shopId);
             executer.sendMessage(ShopMessage.successRemoveNpc(shopId, shop.getName()));
         }
     }

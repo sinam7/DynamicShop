@@ -54,7 +54,9 @@ public class ConfigManager {
                 UUID uuid;
                 try {
                     uuid = UUID.fromString(s);
-                } catch (IllegalArgumentException ignored) { uuid = null; } // not uuid is ignored
+                } catch (IllegalArgumentException ignored) {
+                    uuid = null;
+                } // not uuid is ignored
                 if (uuid != null) {
                     npcList.add(uuid);
                     uuidToShopIdMap.put(UUID.fromString(s), shopId);
@@ -91,7 +93,7 @@ public class ConfigManager {
 
             Shop shop = new Shop(shopId, name, itemEntryMap, npcList);
             ShopManager.addShopToList(shop);
-            updateNpcUuid(shopId);
+            updateNpcUUIDToConfig(shopId);
         }
         ShopManager.setSequence(++sequence);
 
@@ -125,17 +127,41 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
-    public static void updateNpcUuid(Long shopId) {
+    public static void updateNpcUUIDToConfig(Long shopId) {
         Shop shop = ShopManager.getShop(shopId);
         List<UUID> villagerUUIDList = shop.getVillagerUUIDList();
         List<String> result = new ArrayList<>();
-        List<String> npcStringList = config.getStringList("shop.%s.npc".formatted(shopId)); // shop.0.npc
         for (UUID uuid : villagerUUIDList) {
             String string = uuid != null ? uuid.toString() : "REMOVED";
             result.add(string);
         }
         config.set("shop.%s.npc".formatted(shopId), result);
         plugin.saveConfig();
+    }
+
+    public static void loadNpc() {
+        ConfigurationSection section = config.getConfigurationSection("shop");
+        Map<UUID, Long> uuidToShopIdMap = new LinkedHashMap<>();
+        if (section == null) return;
+
+        for (String shopId : section.getKeys(false)) {
+            ConfigurationSection shopSection = section.getConfigurationSection(shopId);
+            if (shopSection == null) continue;
+
+            List<String> npcStringList = shopSection.getStringList("npc"); // shop.0.npc
+            for (String s : npcStringList) {
+                UUID uuid;
+                try {
+                    uuid = UUID.fromString(s);
+                } catch (IllegalArgumentException ignored) {
+                    uuid = null; // not uuid is ignored
+                }
+                if (uuid == null) continue;
+                uuidToShopIdMap.put(UUID.fromString(s), Long.valueOf(shopId));
+            }
+        }
+        VillagerManager.getVillagerFromConfig(uuidToShopIdMap);
+
     }
 
 }

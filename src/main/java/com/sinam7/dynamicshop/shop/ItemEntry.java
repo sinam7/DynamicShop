@@ -1,6 +1,8 @@
 package com.sinam7.dynamicshop.shop;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@ToString
 public class ItemEntry {
 
     private ItemStack displayItem;
@@ -20,11 +23,14 @@ public class ItemEntry {
     private final Integer defaultSellPrice;
     private final Boolean changePrice;
 
+    @Getter(AccessLevel.NONE)
     private double ratio;
     private int currentBuyPrice;
     private int currentSellPrice;
 
+    @Getter(AccessLevel.NONE)
     private int recentBuyPrice;
+    @Getter(AccessLevel.NONE)
     private int recentSellPrice;
 
     private final Style textStyle = Style.style(TextColor.fromHexString("#35c965"));
@@ -37,11 +43,11 @@ public class ItemEntry {
     public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice, Boolean changePrice) {
         this.displayItem = itemStack.clone();
         this.stock = itemStack;
-        this.defaultBuyPrice = this.currentBuyPrice = defaultBuyPrice;
-        this.defaultSellPrice = this.currentSellPrice = defaultSellPrice;
+        this.defaultBuyPrice = this.currentBuyPrice = this.recentBuyPrice = defaultBuyPrice;
+        this.defaultSellPrice = this.currentSellPrice = this.recentSellPrice = defaultSellPrice;
         this.ratio = 0.0;
         this.changePrice = changePrice;
-        updatePrice(ratio);
+        applyPriceInfoToLore();
     }
 
     public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice) {
@@ -51,11 +57,15 @@ public class ItemEntry {
     public void updatePrice(double ratio) {
         this.ratio = ratio;
 
-        this.recentBuyPrice = currentBuyPrice;
-        this.recentSellPrice = currentSellPrice;
+        if (isBuyAble()) {
+            this.recentBuyPrice = currentBuyPrice;
+            this.currentBuyPrice = Math.max((defaultBuyPrice + (int) (defaultBuyPrice * ratio)), 1);
+        }
 
-        currentBuyPrice = Math.max((defaultBuyPrice + (int) (defaultBuyPrice * ratio)), 1);
-        currentSellPrice = Math.max((defaultSellPrice + (int) (defaultSellPrice * ratio)), 1);
+        if (isSellable()) {
+            this.recentSellPrice = currentSellPrice;
+            this.currentSellPrice = Math.max((defaultSellPrice + (int) (defaultSellPrice * ratio)), 1);
+        }
         applyPriceInfoToLore();
     }
 
