@@ -1,13 +1,15 @@
 package com.sinam7.dynamicshop.villager;
 
+import com.sinam7.dynamicshop.ConfigManager;
+import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,8 +19,7 @@ import static net.kyori.adventure.text.Component.text;
 
 public class VillagerManager {
 
-    private static final Map<UUID, Long> shopIdMap = new LinkedHashMap<>();
-    @Getter
+    private static final Map<UUID, Long> villagerToShopIdMap = new LinkedHashMap<>();
     private static final Map<UUID, Villager> villagerMap = new LinkedHashMap<>();
 
     public static @NotNull UUID createVillager(String name, Location loc) {
@@ -40,9 +41,9 @@ public class VillagerManager {
     }
 
     public static void bindVillagerToShop(UUID villagerUUID, Long shopId) {
-        shopIdMap.put(villagerUUID, shopId);
-        Shop shop = ShopManager.getShop(shopId);
-        shop.setLocation(getVillagerById(villagerUUID).getLocation());
+        villagerToShopIdMap.put(villagerUUID, shopId);
+        ShopManager.getShop(shopId).addVillager(villagerUUID);
+        ConfigManager.updateNpcUUIDToConfig(shopId);
     }
 
     public static Villager getVillagerById(UUID id) {
@@ -50,19 +51,29 @@ public class VillagerManager {
     }
 
     public static Long getShopIdByVillagerId(UUID id) {
-        return shopIdMap.get(id);
+        return villagerToShopIdMap.get(id);
     }
 
-    // TODO: 2023-05-17 Change Villager's location to config's data
-    public static void bindVillagerFromConfig(Map<UUID, Long> uuidMap) {
+    public static void getVillagerFromConfig(Map<UUID, Long> uuidToShopMap) {
         for (World w : Bukkit.getServer().getWorlds()) {
             for (Entity e : w.getEntities()) {
                 UUID uuid = e.getUniqueId();
-                if (uuidMap.containsKey(uuid)) {
+                if (uuidToShopMap.containsKey(uuid)) {
                     villagerMap.put(uuid, (Villager) e);
-                    bindVillagerToShop(uuid, uuidMap.get(uuid));
+                    bindVillagerToShop(uuid, uuidToShopMap.get(uuid));
                 }
             }
+        }
+    }
+
+    public static void removeNpc(UUID villagerUUID, Player executer) {
+        if (villagerMap.get(villagerUUID) != null && villagerToShopIdMap.get(villagerUUID) != null) {
+            villagerMap.remove(villagerUUID);
+            Long shopId = villagerToShopIdMap.remove(villagerUUID);
+            Shop shop = ShopManager.getShop(shopId);
+            shop.removeVillager(villagerUUID);
+            ConfigManager.updateNpcUUIDToConfig(shopId);
+            executer.sendMessage(ShopMessage.successRemoveNpc(shopId, shop.getName()));
         }
     }
 }

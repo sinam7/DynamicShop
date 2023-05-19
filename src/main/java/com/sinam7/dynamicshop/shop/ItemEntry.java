@@ -1,6 +1,8 @@
 package com.sinam7.dynamicshop.shop;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
@@ -12,39 +14,80 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@ToString
 public class ItemEntry {
 
-    private final ItemStack displayItem;
-    private final Integer buyPrice;
-    private final Integer sellPrice;
+    private ItemStack displayItem;
     private final ItemStack stock;
+    private final Integer defaultBuyPrice;
+    private final Integer defaultSellPrice;
+    private final Boolean changePrice;
 
-    public ItemEntry(ItemStack itemStack, Integer buyPrice, Integer sellPrice) {
+    @Getter(AccessLevel.NONE)
+    private double ratio;
+    private int currentBuyPrice;
+    private int currentSellPrice;
+
+    @Getter(AccessLevel.NONE)
+    private int recentBuyPrice;
+    @Getter(AccessLevel.NONE)
+    private int recentSellPrice;
+
+    private final Style textStyle = Style.style(TextColor.fromHexString("#35c965"));
+    private final Style valueStyle = Style.style(TextColor.fromHexString("#ffff00"));
+    private final Style disableStyle = Style.style(TextColor.fromHexString("#78807a"));
+    private final Style priceUp = Style.style(TextColor.fromHexString("#ff0000"));
+    private final Style priceDown = Style.style(TextColor.fromHexString("#0000ff"));
+    private final Style priceEqual = Style.style(TextColor.fromHexString("#878787"));
+
+    public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice, Boolean changePrice) {
         this.displayItem = itemStack.clone();
         this.stock = itemStack;
-        this.buyPrice = buyPrice;
-        this.sellPrice = sellPrice;
-
-        applyPriceInfoToLore(this.displayItem, buyPrice, sellPrice);
+        this.defaultBuyPrice = this.currentBuyPrice = this.recentBuyPrice = defaultBuyPrice;
+        this.defaultSellPrice = this.currentSellPrice = this.recentSellPrice = defaultSellPrice;
+        this.ratio = 0.0;
+        this.changePrice = changePrice;
+        applyPriceInfoToLore();
     }
 
-    private void applyPriceInfoToLore(ItemStack itemStack, Integer buyPrice, Integer sellPrice) {
-        ItemMeta meta = itemStack.getItemMeta(); // get itemMeta
+    public ItemEntry(ItemStack itemStack, Integer defaultBuyPrice, Integer defaultSellPrice) {
+        this(itemStack, defaultBuyPrice, defaultSellPrice, defaultBuyPrice == 0 /*if buy disabled return true*/) ;
+    }
 
-        // create text
+    public void updatePrice(double ratio) {
+        this.ratio = ratio;
+
+        if (isBuyAble()) {
+            this.recentBuyPrice = currentBuyPrice;
+            this.currentBuyPrice = Math.max((defaultBuyPrice + (int) (defaultBuyPrice * ratio)), 1);
+        }
+
+        if (isSellable()) {
+            this.recentSellPrice = currentSellPrice;
+            this.currentSellPrice = Math.max((defaultSellPrice + (int) (defaultSellPrice * ratio)), 1);
+        }
+        applyPriceInfoToLore();
+    }
+
+    private void applyPriceInfoToLore() {
+        ItemStack itemStack = stock.clone();
+        ItemMeta meta = itemStack.getItemMeta(); // get itemMeta from Stock
+
         ArrayList<Component> lore = new ArrayList<>();
-        Style textStyle = Style.style(TextColor.fromHexString("#31cade"));
+
+        // create/update text
         TextComponent buyPrice1 = Component.text("Buy Price: ").style(textStyle);
-        TextComponent sellPrice1 = Component.text("Sell Price: ").style(textStyle);
         TextComponent buyStack1 = Component.text("Buy Stack (x64): ").style(textStyle);
+        TextComponent sellPrice1 = Component.text("Sell Price: ").style(textStyle);
         TextComponent sellStack1 = Component.text("Sell Stack (x64): ").style(textStyle);
-        Style valueStyle = Style.style(TextColor.fromHexString("#00ff51"));
-        TextComponent buyPrice2 = Component.text(buyPrice).style(valueStyle);
-        TextComponent sellPrice2 = Component.text(sellPrice).style(valueStyle);
-        TextComponent buyStack2 = Component.text(buyPrice * 64).style(valueStyle);
-        TextComponent sellStack2 = Component.text(sellPrice * 64).style(valueStyle);
-        Style disableStyle = Style.style(TextColor.fromHexString("#78807a"));
+
+        TextComponent buyPrice2 = Component.text(currentBuyPrice).style(valueStyle).append(getChangedInfo(recentBuyPrice, currentBuyPrice));
+        TextComponent buyStack2 = Component.text(currentBuyPrice * 64).style(valueStyle).append(getChangedInfo(recentBuyPrice * 64, currentBuyPrice * 64));
+        TextComponent sellPrice2 = Component.text(currentSellPrice).style(valueStyle).append(getChangedInfo(recentSellPrice, currentSellPrice));
+        TextComponent sellStack2 = Component.text(currentSellPrice * 64).style(valueStyle).append(getChangedInfo(recentSellPrice * 64, currentSellPrice * 64));
+
         TextComponent disabled = Component.text("Disabled").style(disableStyle);
+
 
         // text concatenation
         Component buyLore, buyStackLore = Component.text("");
@@ -71,14 +114,30 @@ public class ItemEntry {
         // apply
         meta.lore(result);
         itemStack.setItemMeta(meta);
+        this.displayItem = itemStack;
+    }
+
+    private TextComponent getChangedInfo(int recent, int current) {
+        TextComponent changeinfo;
+        int abs = Math.abs(recent - current);
+
+        if (recent < current) changeinfo = Component.text(" (▲%s)".formatted(abs)).style(priceUp); /* price up */
+        else if (recent > current) changeinfo = Component.text(" (▼%s)".formatted(abs)).style(priceDown); /* price down */
+        else changeinfo = Component.text(" (〓0)").style(priceEqual); /* equal */
+
+        return changeinfo;
     }
 
     public boolean isBuyAble() {
-        return buyPrice != null && buyPrice > 0;
+        return defaultBuyPrice != null && defaultBuyPrice > 0;
     }
 
     public boolean isSellable() {
-        return sellPrice != null && sellPrice > 0;
+        return defaultSellPrice != null && defaultSellPrice > 0;
+    }
+
+    public boolean canChangePrice() {
+        return changePrice;
     }
 
 }

@@ -6,7 +6,6 @@ import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,8 +20,8 @@ public class ShopManager {
     private static Long sequence = 0L;
     public static final Map<Long, Shop> shopList = new HashMap<>();
 
-    public static Long createShop(String name, Location location) {
-        Shop shop = new Shop(sequence++, location);
+    public static Long createShop(String name) {
+        Shop shop = new Shop(sequence++);
         shop.setName(name);
         shopList.put(shop.id, shop);
         ConfigManager.addShop(shop);
@@ -57,7 +56,7 @@ public class ShopManager {
 
         double balance = getEcon().getBalance(player);
         if (balance < price * amount) { // not enough money
-            player.sendMessage(ShopMessage.notEnoughMoneyBuyProcess(price, balance));
+            player.sendMessage(ShopMessage.notEnoughMoneyBuyProcess(price * amount, balance));
             return;
         }
 
@@ -69,7 +68,7 @@ public class ShopManager {
             player.sendMessage(ShopMessage.notEnoughSlotBuyProcess(res.amount, refund.balance));
             return;
         }
-        player.sendMessage(ShopMessage.successBuyProcess(res.balance * amount));
+        player.sendMessage(ShopMessage.successBuyProcess(res.balance));
     }
 
     public static void executeSellProcess(Player player, ItemEntry entry, Integer price, int amount) {
@@ -87,7 +86,7 @@ public class ShopManager {
 
         player.getInventory().removeItem(entry.getStock().asQuantity(amount));
         EconomyResponse res = getEcon().depositPlayer(player, price * amount);
-        player.sendMessage(ShopMessage.successSellProcess(res.balance * amount));
+        player.sendMessage(ShopMessage.successSellProcess(res.balance));
     }
 
     public static void addShopToList(Shop shop) {

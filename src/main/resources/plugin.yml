@@ -1,5 +1,5 @@
 name: DynamicShop
-version: 0.1.0
+version: 0.3.0-alpha
 main: com.sinam7.dynamicshop.DynamicShop
 description: Shop with dynamic price
 author: sinam7

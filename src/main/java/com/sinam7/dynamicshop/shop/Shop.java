@@ -2,11 +2,9 @@ package com.sinam7.dynamicshop.shop;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Setter
@@ -14,20 +12,18 @@ public class Shop {
 
     final Long id;
     String name;
-    Location location;
     Map<Integer, ItemEntry> itemEntryMap;
+    List<UUID> villagerUUIDList;
 
-    public Shop(long id, Location location) {
-        this.id = id;
-        this.location = location;
-        itemEntryMap = new LinkedHashMap<>();
+    public Shop(long id) {
+        this(id, null, new LinkedHashMap<>(), new ArrayList<>());
     }
 
-    public Shop(Long id, String name, Location location, Map<Integer, ItemEntry> itemEntryMap) {
+    public Shop(Long id, String name, Map<Integer, ItemEntry> itemEntryMap, List<UUID> villagerUUIDList) {
         this.id = id;
         this.name = name;
-        this.location = location;
         this.itemEntryMap = itemEntryMap;
+        this.villagerUUIDList = villagerUUIDList;
     }
 
     public void addItemEntry(ItemStack itemStack, Integer buyPrice, Integer sellPrice) {
@@ -46,6 +42,14 @@ public class Shop {
             display.put(slotId, itemEntryMap.get(slotId).getDisplayItem());
         }
         return display;
+    }
+
+    public void addVillager(UUID villagerUUID) {
+        if (!villagerUUIDList.contains(villagerUUID)) villagerUUIDList.add(villagerUUID);
+    }
+
+    public void removeVillager(UUID villagerUUID) {
+        villagerUUIDList.set(villagerUUIDList.indexOf(villagerUUID), null);
     }
 
 }

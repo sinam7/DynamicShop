@@ -4,8 +4,6 @@ import com.sinam7.dynamicshop.shop.ItemEntry;
 import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
 import com.sinam7.dynamicshop.villager.VillagerManager;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -22,21 +20,24 @@ public class ConfigManager {
     shop:
       (shopId):
         name: "shopName"
-        world: (world's name:String)
-        location: [x, y, z, yaw] // pitch = 0
-        npcuuid: (npc's uuid:String)
+        npcuuid: [npc's uuid:String]
         entries:
           (slotId):
             stock: ItemStack()
             buyprice: Integer()
             sellPrice: Integer()
+            changeprice: true/false/(or not: result of buyprice==0)
      */
 
     public static void loadConfig() {
+        config = plugin.getConfig();
         ConfigurationSection section = config.getConfigurationSection("shop"); // shop
-        if (section == null) return;
-        long sequence = 0L;
-        Map<UUID, Long> uuidMap = new LinkedHashMap<>();
+        long sequence = -1L;
+        if (section == null) {
+            plugin.getLogger().log(Level.INFO, "No shop section found!");
+            return;
+        }
+        Map<UUID, Long> uuidToShopIdMap = new LinkedHashMap<>();
         for (String key : section.getKeys(false)) { // shop.0
             ConfigurationSection shopSection = config.getConfigurationSection("shop." + key);
             if (shopSection == null) continue;
@@ -47,16 +48,20 @@ public class ConfigManager {
             String name = shopSection.getString("name"); // shop.0.name
             if (name == null) continue;
 
-            String worldName = shopSection.getString("world"); // shop.0.world
-            List<Double> rawloc = shopSection.getDoubleList("location"); // shop.0.location
-            String rawUUID = shopSection.getString("npcuuid"); // shop.0.npcuuid
-
-            if (worldName == null || rawloc.isEmpty() || rawUUID == null) continue;
-
-            World world = plugin.getServer().getWorld(worldName);
-            Location location = new Location(world, rawloc.get(0), rawloc.get(1), rawloc.get(2), 0, rawloc.get(3).floatValue());
-            UUID npcUUID = UUID.fromString(rawUUID);
-            uuidMap.put(npcUUID, shopId);
+            List<UUID> npcList = new ArrayList<>();
+            List<String> npcStringList = shopSection.getStringList("npc"); // shop.0.npc
+            for (String s : npcStringList) {
+                UUID uuid;
+                try {
+                    uuid = UUID.fromString(s);
+                } catch (IllegalArgumentException ignored) {
+                    uuid = null;
+                } // not uuid is ignored
+                if (uuid != null) {
+                    npcList.add(uuid);
+                    uuidToShopIdMap.put(UUID.fromString(s), shopId);
+                }
+            }
 
             ConfigurationSection entriesSection = shopSection.getConfigurationSection("entries"); // shop.0.entries
             Map<Integer, ItemEntry> itemEntryMap = new LinkedHashMap<>();
@@ -68,40 +73,43 @@ public class ConfigManager {
                     if (entry == null) continue;
 
                     ItemStack stock = entry.getItemStack("stock"); // shop.0.entries.0.stock
-                    int buyprice = entry.getInt("buyprice"); // shop.0.entries.0.buyprice
-                    int sellprice = entry.getInt("sellprice"); // shop.0.entries.0.sellprice
+                    int buyprice = entry.getInt("buyprice", 0); // shop.0.entries.0.buyprice
+                    int sellprice = entry.getInt("sellprice", 0); // shop.0.entries.0.sellprice
+
+                    String rawChangePrice = entry.getString("changeprice"); // shop.0.entries.0.changeprice
+                    boolean state;
+                    switch (rawChangePrice == null ? "null" : rawChangePrice.toLowerCase().strip()) {
+                        case "true" -> state = true;
+                        case "false" -> state = false;
+                        default -> state = buyprice == 0;
+                        /*  if changePrice is not specified and buyprice is not 0(=buy enabled), return false */
+                    }
 
                     if (stock == null || buyprice < 0 || sellprice < 0) continue;
-                    ItemEntry itemEntry = new ItemEntry(stock, buyprice, sellprice);
+                    ItemEntry itemEntry = new ItemEntry(stock, buyprice, sellprice, state);
                     itemEntryMap.put(slotId, itemEntry);
                 }
             }
 
-            Shop shop = new Shop(shopId, name, location, itemEntryMap);
+            Shop shop = new Shop(shopId, name, itemEntryMap, npcList);
             ShopManager.addShopToList(shop);
-
+            updateNpcUUIDToConfig(shopId);
         }
         ShopManager.setSequence(++sequence);
 
-        VillagerManager.bindVillagerFromConfig(uuidMap);
-        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
+        VillagerManager.getVillagerFromConfig(uuidToShopIdMap);
     }
 
-    public static void init(JavaPlugin plugin, FileConfiguration config) {
+    public static void init(JavaPlugin plugin) {
         ConfigManager.plugin = plugin;
-        ConfigManager.config = config;
+        config = plugin.getConfig();
+        loadConfig();
     }
 
     public static void addShop(Shop shop) {
         Long id = shop.getId();
         String name = shop.getName();
         config.set("shop.%s.name".formatted(id), name);
-
-        Location loc = shop.getLocation();
-        double[] coordinates = new double[]{loc.x(), loc.y(), loc.z(), loc.getYaw()};
-        config.set("shop.%s.world".formatted(id), loc.getWorld().getName());
-        config.set("shop.%s.location".formatted(id), coordinates);
-
         plugin.saveConfig();
     }
 
@@ -110,22 +118,50 @@ public class ConfigManager {
         Map<Integer, ItemEntry> itemEntryMap = shop.getItemEntryMap();
         for (Integer slotId : itemEntryMap.keySet()) {
             config.set("shop.%s.entries.%s.stock".formatted(shopId, slotId), itemEntryMap.get(slotId).getStock());
-            config.set("shop.%s.entries.%s.buyprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getBuyPrice());
-            config.set("shop.%s.entries.%s.sellprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getSellPrice());
+            config.set("shop.%s.entries.%s.buyprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultBuyPrice());
+            config.set("shop.%s.entries.%s.sellprice".formatted(shopId, slotId), itemEntryMap.get(slotId).getDefaultSellPrice());
+            Boolean raw = itemEntryMap.get(slotId).getChangePrice();
+            config.set("shop.%s.entries.%s.changeprice".formatted(shopId, slotId), raw == null ? itemEntryMap.get(slotId).getDefaultBuyPrice() == 0 : raw);
         }
 
         plugin.saveConfig();
     }
 
-    public static void updateShopLocationQuery(UUID villagerUUID, Long shopId) {
+    public static void updateNpcUUIDToConfig(Long shopId) {
         Shop shop = ShopManager.getShop(shopId);
-        Location loc = shop.getLocation();
-        config.set("shop.%s.world".formatted(shopId), loc.getWorld().getName());
-
-        double[] coordinates = new double[]{loc.x(), loc.y(), loc.z(), loc.getYaw()};
-        config.set("shop.%s.location".formatted(shopId), coordinates);
-        config.set("shop.%s.npcuuid".formatted(shopId), villagerUUID.toString());
-
+        List<UUID> villagerUUIDList = shop.getVillagerUUIDList();
+        List<String> result = new ArrayList<>();
+        for (UUID uuid : villagerUUIDList) {
+            String string = uuid != null ? uuid.toString() : "REMOVED";
+            result.add(string);
+        }
+        config.set("shop.%s.npc".formatted(shopId), result);
         plugin.saveConfig();
     }
+
+    public static void loadNpc() {
+        ConfigurationSection section = config.getConfigurationSection("shop");
+        Map<UUID, Long> uuidToShopIdMap = new LinkedHashMap<>();
+        if (section == null) return;
+
+        for (String shopId : section.getKeys(false)) {
+            ConfigurationSection shopSection = section.getConfigurationSection(shopId);
+            if (shopSection == null) continue;
+
+            List<String> npcStringList = shopSection.getStringList("npc"); // shop.0.npc
+            for (String s : npcStringList) {
+                UUID uuid;
+                try {
+                    uuid = UUID.fromString(s);
+                } catch (IllegalArgumentException ignored) {
+                    uuid = null; // not uuid is ignored
+                }
+                if (uuid == null) continue;
+                uuidToShopIdMap.put(UUID.fromString(s), Long.valueOf(shopId));
+            }
+        }
+        VillagerManager.getVillagerFromConfig(uuidToShopIdMap);
+
+    }
+
 }
