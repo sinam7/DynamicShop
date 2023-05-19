@@ -55,8 +55,8 @@ public class CommandManager implements CommandExecutor {
             case "open" -> openShopGui(sender, args); // ds open (Shop id)
             case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
 
-            case "debug" -> { // ds admin (run)
-                switch (args[1] != null ? args[1] : "null") {
+            case "debug" -> { // ds debu.g (run)
+                switch (args.length == 2 ? args[1] : "") {
                     case "price" -> PriceChanger.updateAllShopPrice();
                     case "reload" -> reloadConfig();
                     default -> flag = false;
