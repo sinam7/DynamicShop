@@ -1,0 +1,14 @@
+#shop:
+#  '0': # shop Id
+#    name: logs
+#    npc: # villager uuid bound to the shop
+#      - e9cd025a-6024-4373-8c1b-ee77b1c25872
+#    entries:
+#      '0': # item stock entry slot id
+#        stock:
+#          ==: org.bukkit.inventory.ItemStack
+#          v: 3337
+#          type: BIRCH_WOOD
+#        buyprice: 30
+#        sellprice: 30
+#        changeprice: false # price will be changed if true

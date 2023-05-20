@@ -6,6 +6,7 @@ import com.sinam7.dynamicshop.shop.ShopManager;
 import com.sinam7.dynamicshop.villager.VillagerManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -104,6 +105,20 @@ public class ConfigManager {
         ConfigManager.plugin = plugin;
         config = plugin.getConfig();
         loadConfig();
+    }
+
+    public static void reloadConfig() {
+        plugin.getLogger().log(Level.INFO, "Config load started...");
+        plugin.reloadConfig();
+        loadConfig();
+        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
+    }
+
+    public static void notifyLoadConfig(Player player) {
+        plugin.getLogger().log(Level.INFO, "Config load started by %s".formatted(player.getName()));
+        player.sendMessage("Config load started...");
+        reloadConfig();
+        player.sendMessage("Config successfully loaded!");
     }
 
     public static void addShop(Shop shop) {

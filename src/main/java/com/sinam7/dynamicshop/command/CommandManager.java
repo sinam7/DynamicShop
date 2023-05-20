@@ -14,21 +14,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class CommandManager implements CommandExecutor {
-
-    private final JavaPlugin plugin;
-
-    public CommandManager(JavaPlugin plugin) {
-        this.plugin = plugin;
-    }
-
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -56,9 +47,10 @@ public class CommandManager implements CommandExecutor {
             case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
 
             case "debug" -> { // ds debu.g (run)
-                switch (args.length == 2 ? args[1] : "") {
-                    case "price" -> PriceChanger.updateAllShopPrice();
-                    case "reload" -> reloadConfig();
+                if (args.length == 1){ GuiManager.createAdminGui(((Player) sender).getPlayer());}
+                else switch (args[1]) {
+                    case "price" -> PriceChanger.notifyUpdateShopPrice(sender);
+                    case "reload" -> ConfigManager.reloadConfig();
                     default -> flag = false;
                 }
             }
@@ -66,13 +58,6 @@ public class CommandManager implements CommandExecutor {
             default -> flag = false;
         }
         return flag;
-    }
-
-    private void reloadConfig() {
-        plugin.getLogger().log(Level.INFO, "Config load started...");
-        plugin.reloadConfig();
-        ConfigManager.loadConfig();
-        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
     }
 
     private static void createNpc(Player sender, String[] args) {
@@ -159,7 +144,7 @@ public class CommandManager implements CommandExecutor {
             return;
         }
 
-        GuiManager.createGui((Player) sender, shopId);
+        GuiManager.createShopGui((Player) sender, shopId);
     }
 
     private static void createShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
@@ -179,7 +164,7 @@ public class CommandManager implements CommandExecutor {
         UUID villagerUUID = VillagerManager.createVillager(shopName, location);
         VillagerManager.bindVillagerToShop(villagerUUID, shopId);
 
-        GuiManager.createGui(player, shopId);
+        GuiManager.createShopGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
     }
