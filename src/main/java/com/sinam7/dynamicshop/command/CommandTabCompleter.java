@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 public class CommandTabCompleter implements TabCompleter {
 
     final String[] commands = new String[]{"create", "open", "additem", "npc", "debug"};
-    final String[] debugCommands = new String[]{"price", "reload"};
+    final String[] debugCommands = new String[]{"price", "reload", "resetupdateperiod"};
     final List<String> emptyList = new ArrayList<>();
 
     @Override

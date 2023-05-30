@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 import java.util.Random;
 
-// TODO: 2023-05-18 버킷 스케쥴링으로 자동 가격 변경
 public class PriceChanger {
 
     private static final TextComponent shopUpdatedText = Component.text("Shop price is updated!", Style.style(TextColor.fromHexString("#ffff00")));

@@ -1,6 +1,7 @@
 package com.sinam7.dynamicshop.command;
 
 import com.sinam7.dynamicshop.ConfigManager;
+import com.sinam7.dynamicshop.DynamicShop;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.PriceChanger;
@@ -20,6 +21,11 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class CommandManager implements CommandExecutor {
+
+    private final DynamicShop main;
+    public CommandManager(DynamicShop main) {
+        this.main = main;
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -48,9 +54,10 @@ public class CommandManager implements CommandExecutor {
 
             case "debug" -> { // ds debu.g (run)
                 if (args.length == 1){ GuiManager.createAdminGui(((Player) sender).getPlayer());}
-                else switch (args[1]) {
+                else switch (args[1].toLowerCase()) {
                     case "price" -> PriceChanger.notifyUpdateShopPrice(sender);
                     case "reload" -> ConfigManager.reloadConfig();
+                    case "resetupdateperiod" -> main.resetUpdatePeriod();
                     default -> flag = false;
                 }
             }
