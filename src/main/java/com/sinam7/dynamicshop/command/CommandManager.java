@@ -15,12 +15,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class CommandManager implements CommandExecutor {
+
 
     private final DynamicShop main;
     public CommandManager(DynamicShop main) {
@@ -53,11 +56,13 @@ public class CommandManager implements CommandExecutor {
             case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
 
             case "debug" -> { // ds debu.g (run)
+
                 if (args.length == 1){ GuiManager.createAdminGui(((Player) sender).getPlayer());}
                 else switch (args[1].toLowerCase()) {
                     case "price" -> PriceChanger.notifyUpdateShopPrice(sender);
                     case "reload" -> ConfigManager.reloadConfig();
                     case "resetupdateperiod" -> main.resetUpdatePeriod();
+
                     default -> flag = false;
                 }
             }
@@ -152,6 +157,7 @@ public class CommandManager implements CommandExecutor {
         }
 
         GuiManager.createShopGui((Player) sender, shopId);
+
     }
 
     private static void createShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
