@@ -4,8 +4,10 @@ import com.sinam7.dynamicshop.shop.ItemEntry;
 import com.sinam7.dynamicshop.shop.Shop;
 import com.sinam7.dynamicshop.shop.ShopManager;
 import com.sinam7.dynamicshop.villager.VillagerManager;
+import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,6 +17,8 @@ import java.util.logging.Level;
 public class ConfigManager {
     private static JavaPlugin plugin = null;
     private static FileConfiguration config;
+    @Getter
+    private static Long updateperiod = 3600L * 20;
 
     /*
     shop:
@@ -31,6 +35,13 @@ public class ConfigManager {
 
     public static void loadConfig() {
         config = plugin.getConfig();
+        long updateperiod1 = config.getLong("updateperiod");
+        if (updateperiod1 <= 0) {
+            config.set("updateperiod", 3600);
+            plugin.saveConfig();
+        }
+        updateperiod = updateperiod1 * 20; // second(s) to ticks
+
         ConfigurationSection section = config.getConfigurationSection("shop"); // shop
         long sequence = -1L;
         if (section == null) {
@@ -104,6 +115,20 @@ public class ConfigManager {
         ConfigManager.plugin = plugin;
         config = plugin.getConfig();
         loadConfig();
+    }
+
+    public static void reloadConfig() {
+        plugin.getLogger().log(Level.INFO, "Config load started...");
+        plugin.reloadConfig();
+        loadConfig();
+        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
+    }
+
+    public static void notifyLoadConfig(Player player) {
+        plugin.getLogger().log(Level.INFO, "Config load started by %s".formatted(player.getName()));
+        player.sendMessage("Config load started...");
+        reloadConfig();
+        player.sendMessage("Config successfully loaded!");
     }
 
     public static void addShop(Shop shop) {

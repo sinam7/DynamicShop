@@ -24,7 +24,7 @@ public class VillagerEvent implements Listener {
 
         if (villagerById != null) {
             event.setCancelled(true);
-            GuiManager.createGui(event.getPlayer(), VillagerManager.getShopIdByVillagerId(clickedUniqueId));
+            GuiManager.createShopGui(event.getPlayer(), VillagerManager.getShopIdByVillagerId(clickedUniqueId));
         }
     }
 

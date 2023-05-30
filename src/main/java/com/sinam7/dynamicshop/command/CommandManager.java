@@ -1,6 +1,7 @@
 package com.sinam7.dynamicshop.command;
 
 import com.sinam7.dynamicshop.ConfigManager;
+import com.sinam7.dynamicshop.DynamicShop;
 import com.sinam7.dynamicshop.gui.GuiManager;
 import com.sinam7.dynamicshop.message.ShopMessage;
 import com.sinam7.dynamicshop.shop.PriceChanger;
@@ -23,12 +24,11 @@ import java.util.logging.Level;
 
 public class CommandManager implements CommandExecutor {
 
-    private final JavaPlugin plugin;
 
-    public CommandManager(JavaPlugin plugin) {
-        this.plugin = plugin;
+    private final DynamicShop main;
+    public CommandManager(DynamicShop main) {
+        this.main = main;
     }
-
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, org.bukkit.command.@NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -56,9 +56,13 @@ public class CommandManager implements CommandExecutor {
             case "npc" -> createNpc((Player) sender, args); // ds npc (Shop id)
 
             case "debug" -> { // ds debu.g (run)
-                switch (args.length == 2 ? args[1] : "") {
-                    case "price" -> PriceChanger.updateAllShopPrice();
-                    case "reload" -> reloadConfig();
+
+                if (args.length == 1){ GuiManager.createAdminGui(((Player) sender).getPlayer());}
+                else switch (args[1].toLowerCase()) {
+                    case "price" -> PriceChanger.notifyUpdateShopPrice(sender);
+                    case "reload" -> ConfigManager.reloadConfig();
+                    case "resetupdateperiod" -> main.resetUpdatePeriod();
+
                     default -> flag = false;
                 }
             }
@@ -66,13 +70,6 @@ public class CommandManager implements CommandExecutor {
             default -> flag = false;
         }
         return flag;
-    }
-
-    private void reloadConfig() {
-        plugin.getLogger().log(Level.INFO, "Config load started...");
-        plugin.reloadConfig();
-        ConfigManager.loadConfig();
-        plugin.getLogger().log(Level.INFO, "Config successfully loaded!");
     }
 
     private static void createNpc(Player sender, String[] args) {
@@ -159,7 +156,8 @@ public class CommandManager implements CommandExecutor {
             return;
         }
 
-        GuiManager.createGui((Player) sender, shopId);
+        GuiManager.createShopGui((Player) sender, shopId);
+
     }
 
     private static void createShop(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
@@ -179,7 +177,7 @@ public class CommandManager implements CommandExecutor {
         UUID villagerUUID = VillagerManager.createVillager(shopName, location);
         VillagerManager.bindVillagerToShop(villagerUUID, shopId);
 
-        GuiManager.createGui(player, shopId);
+        GuiManager.createShopGui(player, shopId);
         sender.sendMessage(ShopMessage.successCreateShop(shopId, shopName));
 
     }

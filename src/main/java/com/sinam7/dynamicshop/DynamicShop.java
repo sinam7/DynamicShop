@@ -4,6 +4,7 @@ import com.sinam7.dynamicshop.command.CommandManager;
 import com.sinam7.dynamicshop.command.CommandTabCompleter;
 import com.sinam7.dynamicshop.event.ShopEvent;
 import com.sinam7.dynamicshop.event.VillagerEvent;
+import com.sinam7.dynamicshop.shop.PriceChanger;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
@@ -11,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +22,13 @@ public class DynamicShop extends JavaPlugin implements Listener {
 
     public static final Logger log = Logger.getLogger("Minecraft");
     private static Economy econ = null;
+    private BukkitTask updatePriceTask;
+
+    public void resetUpdatePeriod() {
+        updatePriceTask.cancel();
+        updatePriceTask = Bukkit.getScheduler().runTaskTimer(this, () -> PriceChanger.notifyUpdateShopPrice(null), 0, ConfigManager.getUpdateperiod());
+    }
+
 
     @SuppressWarnings("DataFlowIssue")
     @Override
@@ -37,8 +46,8 @@ public class DynamicShop extends JavaPlugin implements Listener {
 
         saveDefaultConfig();
         ConfigManager.init(this);
+        updatePriceTask = Bukkit.getScheduler().runTaskTimer(this, () -> PriceChanger.notifyUpdateShopPrice(null), 0, ConfigManager.getUpdateperiod());
     }
-
 
 
     @SuppressWarnings("ConstantValue")
