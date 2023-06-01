@@ -68,7 +68,7 @@ public class ShopManager {
             player.sendMessage(ShopMessage.notEnoughSlotBuyProcess(res.amount, refund.balance));
             return;
         }
-        player.sendMessage(ShopMessage.successBuyProcess(res.balance));
+        player.sendMessage(ShopMessage.successBuyProcess(amount, res.amount, res.balance));
     }
 
     public static void executeSellProcess(Player player, ItemEntry entry, Integer price, int amount) {
@@ -77,16 +77,34 @@ public class ShopManager {
             return;
         }
 
-        boolean containsAtLeast = player.getInventory().containsAtLeast(entry.getStock(), amount);
+        if (amount != 1) {
+            // get amount of item which is equals to entry.getStock() in player's inventory
+            int amountInInventory = 0;
+            for (ItemStack itemStack : player.getInventory().getContents()) {
+                if (itemStack != null && itemStack.isSimilar(entry.getStock())) {
+                    amountInInventory += itemStack.getAmount();
+                    if (amountInInventory > itemStack.getMaxStackSize()) {
+                        amountInInventory = itemStack.getMaxStackSize();
+                        break;
+                    }
+                }
+            }
+            amount = amountInInventory;
 
-        if (!containsAtLeast) { // not enough item to sell
-            player.sendMessage(ShopMessage.notEnoughItemSellProcess());
-            return;
+            if (amountInInventory < 1) { // not enough item to sell
+                player.sendMessage(ShopMessage.notEnoughItemSellProcess());
+                return;
+            }
+        } else {
+            if (!player.getInventory().containsAtLeast(entry.getStock(), amount)) { // not enough item to sell
+                player.sendMessage(ShopMessage.notEnoughItemSellProcess());
+                return;
+            }
         }
 
         player.getInventory().removeItem(entry.getStock().asQuantity(amount));
         EconomyResponse res = getEcon().depositPlayer(player, price * amount);
-        player.sendMessage(ShopMessage.successSellProcess(res.balance));
+        player.sendMessage(ShopMessage.successSellProcess(amount, res.amount, res.balance));
     }
 
     public static void addShopToList(Shop shop) {

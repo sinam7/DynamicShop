@@ -46,10 +46,10 @@ public class ShopEvent implements Listener {
         ClickType click = event.getClick();
         switch (click) {
             case LEFT -> ShopManager.executeBuyProcess(player, entry, entry.getCurrentBuyPrice(), 1);
-            case SHIFT_LEFT -> ShopManager.executeBuyProcess(player, entry, entry.getCurrentBuyPrice(), 64);
+            case SHIFT_LEFT -> ShopManager.executeBuyProcess(player, entry, entry.getCurrentBuyPrice(), entry.getStock().getMaxStackSize());
 
             case RIGHT -> ShopManager.executeSellProcess(player, entry, entry.getCurrentSellPrice(), 1);
-            case SHIFT_RIGHT -> ShopManager.executeSellProcess(player, entry, entry.getCurrentSellPrice(), 64);
+            case SHIFT_RIGHT -> ShopManager.executeSellProcess(player, entry, entry.getCurrentSellPrice(), entry.getStock().getMaxStackSize());
         }
     }
 

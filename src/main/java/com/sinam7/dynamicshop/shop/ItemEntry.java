@@ -74,17 +74,18 @@ public class ItemEntry {
         ItemMeta meta = itemStack.getItemMeta(); // get itemMeta from Stock
 
         ArrayList<Component> lore = new ArrayList<>();
+        int maxStackSize = itemStack.getMaxStackSize();
 
         // create/update text
         TextComponent buyPrice1 = Component.text("Buy Price: ").style(textStyle);
-        TextComponent buyStack1 = Component.text("Buy Stack (x64): ").style(textStyle);
+        TextComponent buyStack1 = Component.text("Buy Stack (x%s): ".formatted(maxStackSize)).style(textStyle);
         TextComponent sellPrice1 = Component.text("Sell Price: ").style(textStyle);
-        TextComponent sellStack1 = Component.text("Sell Stack (x64): ").style(textStyle);
+        TextComponent sellStack1 = Component.text("Sell Stack (x%s): ".formatted(maxStackSize)).style(textStyle);
 
         TextComponent buyPrice2 = Component.text(currentBuyPrice).style(valueStyle).append(getChangedInfo(recentBuyPrice, currentBuyPrice));
-        TextComponent buyStack2 = Component.text(currentBuyPrice * 64).style(valueStyle).append(getChangedInfo(recentBuyPrice * 64, currentBuyPrice * 64));
+        TextComponent buyStack2 = Component.text(currentBuyPrice * maxStackSize).style(valueStyle).append(getChangedInfo(recentBuyPrice * maxStackSize, currentBuyPrice * maxStackSize));
         TextComponent sellPrice2 = Component.text(currentSellPrice).style(valueStyle).append(getChangedInfo(recentSellPrice, currentSellPrice));
-        TextComponent sellStack2 = Component.text(currentSellPrice * 64).style(valueStyle).append(getChangedInfo(recentSellPrice * 64, currentSellPrice * 64));
+        TextComponent sellStack2 = Component.text(currentSellPrice * maxStackSize).style(valueStyle).append(getChangedInfo(recentSellPrice * maxStackSize, currentSellPrice * maxStackSize));
 
         TextComponent disabled = Component.text("Disabled").style(disableStyle);
 

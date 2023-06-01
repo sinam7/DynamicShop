@@ -112,11 +112,11 @@ public class ShopMessage {
     /*
         Purchase
      */
-    public static TextComponent successBuyProcess(double balance) {
+    public static TextComponent successBuyProcess(int amount, double used, double balance) {
         return Component.text(
                 """
-                        Item successfully bought!
-                        your current balance: %s""".formatted(balance)
+                        Item successfully bought %s item%s for %s!
+                        your current balance: %s""".formatted(amount, amount == 1 ? "" : "s", used, balance)
                 , Style.style(TextColor.fromHexString("#00ff00"))
         );
     }
@@ -147,11 +147,11 @@ public class ShopMessage {
         );
     }
 
-    public static TextComponent successSellProcess(double balance) {
+    public static TextComponent successSellProcess(int amount, double used, double balance) {
         return Component.text(
                 """
-                        Item successfully sold!
-                        your current balance: %s""".formatted(balance)
+                        Item successfully sold %s item%s for %s!
+                        your current balance: %s""".formatted(amount, amount == 1 ? "" : "s", used, balance)
                 , Style.style(TextColor.fromHexString("#00ff00"))
         );
     }
